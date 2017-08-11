@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>One2Team App Integration</title>
+    <meta charset="utf-8" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <link href="node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="node_modules/jquery-ui-dist/jquery-ui.min.css" rel="stylesheet" />
+    <link href="css/custom-style.css" rel="stylesheet" />
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="node_modules/jquery-ui-dist/jquery-ui.min.js"></script>
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="node_modules/knockout/build/output/knockout-latest.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>One2team app integration with Office 365</h2>
+        <br />
+        <!-- Trigger the modal with a button -->
+        <button type="button" class="btn btn-info btn-lg" data-bind="click:GetFoldersAndFiles">Get Documents</button>
+        <button type="button" class="btn btn-info btn-lg" data-bind="click:Logout">Logout</button>
+        <!-- Modal -->
+        <div class="modal fade" id="docModal" role="dialog" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Office 365 Documents</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="btn-breadcrumb-container">
+                            <div class="col-md-12 col-sm-12 col-xs-12 btns-container">
+                                <div class="list-group list-group-horizontal">
+                                    <a href="#" class="list-group-item" title="Create new folder" data-bind="click:CreateNewFolder"><i class="fa fa-plus"></i><span>New Folder</span></a>
+                                    <a href="#" class="list-group-item" title="Choose files to upload">
+                                        <input type="file" name="file-3[]" data-bind="event: { change:UploadToSPhere}" id="file-3" class="inputfile inputfile-3" data-multiple-caption="{count} files selected" multiple />
+                                        <label for="file-3"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewbox="0 0 20 17"><path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z" /></svg> <span>Upload</span></label>
+                                    </a>
+                                    <a href="#" class="list-group-item icon-right o365logo" data-bind="click:UploadToSharepoint" title="Office 365"><img src="images/office365-logo.png" /></a>
+                                    <a href="#" class="list-group-item icon-right o365icon" data-bind="click:UploadToSPhere"><img src="images/office-365.png" /></a>
+                                </div>
+                            </div>
+                            <!-- .breadcrumb -->
+                            <div class="col-md-12 col-sm-12 col-xs-12 breadcrumb-container desktop-breadcrumb">
+                                <div class="ui breadcrumb" data-bind="foreach: breadCrumbs">
+                                    <a class="section" data-bind="html: text, click:$root.OnBreadCrumbClick">Documents</a>
+                                    <i class="fa fa-angle-right divider"></i>
+                                </div>
+                            </div>
+                            <!-- .breadcrumb -->
+                            <!-- mobile breadcrumb -->
+                            <div class="col-md-12 col-xs-12 mobile-breadcrumb">
+                                <div class="row">
+                                    <div class="col-md-1 col-xs-2">
+                                        <div class="row">
+                                            <button class="btn-left"><i class="fa fa-angle-left"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-10 col-xs-8 doc-name">
+                                        <span>Documents</span>
+                                    </div>
+                                    <div class="col-md-1 col-xs-2">
+                                        <div class="row">
+                                            <button class="btn-right"><i class="fa fa-angle-right"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- mobile breadcrumb -->
+                        </div>
+                        <div class="row content-area upload-area" id="uploadfile">
+                            <div class="">
+                                <table class="table all-docs">
+                                    <thead>
+                                        <tr>
+                                            <th><img alt="file" src="images/icons/file.jpg" /><span style="margin-left: 5px;">Name</span></th>
+                                            <th>Modified Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach:docs">
+                                        <tr>
+                                            <!-- ko if: IsFolder -->
+                                            <td>
+                                                <div class="media">
+                                                    <div class="nockbox">
+                                                        <input type="checkbox" data-bind="checked:isSelected" />
+                                                        <label for="checkbox1"></label>
+                                                    </div>
+                                                    <a href="#" class="pull-left">
+                                                        <img src="images/icons/folder.png" class="media-photo">
+                                                    </a>
+                                                    <div class="media-body">
+                                                        <p class="summary"><a href="#" data-bind="html: Name, click:$root.OnFolderClick"></a></p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <!-- /ko -->
+                                            <!-- ko if: !IsFolder -->
+                                            <td>
+                                                <div class="media">
+                                                    <div class="ckbox">
+                                                        <input type="checkbox" data-bind="checked:isSelected" />
+                                                        <label for="checkbox1"></label>
+                                                    </div>
+                                                    <a href="#" class="pull-left">
+                                                        <img data-bind="attr:{src:'/'+icon}" class="media-photo">
+                                                    </a>
+                                                    <div class="media-body">
+                                                        <p class="summary"><a target="_blank" data-bind="html:Name, attr:{href:URL}"></a></p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <!-- /ko -->
+                                            <td data-bind="html:moment(modified).format('LLL')"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-bind="click:AddToList" data-dismiss="modal" title="Add files">Add</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal" title="Close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="wait" class="loadling">
+        <div class="loadingBg"></div>
+        <img src="../Images/loadingds.gif" width="64" height=""><br>
+        Processing..
+    </div>
+    <script src="scripts/moment.js" defer="defer"></script>
+    <script src="scripts/custom/utility.js"></script>
+    <script type="text/javascript" src="scripts/custom/core.js" defer="defer"></script>
+</body>
+</html>
+
+
